@@ -1,5 +1,5 @@
 const { Client, Intents, MessageActionRow, MessageButton } = require('discord.js');
-const { token } = require('./config.json');
+const { token } = require('../config.json');
 const { TicTacToe } = require('./databaseObjects.js');
 
 
