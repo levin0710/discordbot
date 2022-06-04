@@ -1,19 +1,32 @@
-const { Client, Intents, MessageActionRow, MessageButton } = require('discord.js');
+const { Collection, Client, Intents, MessageActionRow, MessageButton, MessageEmbed } = require('discord.js');
 const { token } = require('../config.json');
 const { TicTacToe } = require('./databaseObjects.js');
 
-
-const client = new Client({ intents: [Intents.FLAGS.GUILDS , Intents.FLAGS.GUILD_MESSAGES] });
+const commandPrefix = "?"
+const client = new Client({ 
+    intents: [Intents.FLAGS.GUILDS , Intents.FLAGS.GUILD_MESSAGES],
+    allowedMentions: ["users"]
+});
+const fs = require("fs");
+client.commands = new Collection();
+const commands = fs.readdirSync('./commands').filter(file => file.endsWith(".js"));
+for(file of commands){
+    const commandName = file.split(".")[0]
+    const command = require(`./commands/${commandName}`)
+    client.commands.set(commandName, command)
+}
 
 client.once('ready', () => {
     console.log('Ready!');
 })
 
 client.on('messageCreate', (message) => {
-    if(message.author.id === client.user.id) return;
-
-    if(message.content === "ping"){
-        message.reply("pong");
+    if(message.content.startsWith(commandPrefix)){
+        const args = message.content.slice(commandPrefix.length).trim().split(/ +/g)
+        const commandName = args.shift()
+        const command = client.commands.get(commandName)
+        if(!command) return
+        command.run(client, message, args)
     }
 })
 
